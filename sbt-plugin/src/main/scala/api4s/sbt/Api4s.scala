@@ -68,11 +68,15 @@ object Api4s extends AutoPlugin {
         res += model
         IO.write(model, CirceModel(pkg, api.types))
 
-        // Api trait
+        // Api and Attributes
         if (server || client) {
           val apiF = p / "Api.scala"
           res += apiF
           IO.write(apiF, ClientServerApi(pkg, api.endpoints))
+
+          val attrs = p / "Attributes.scala"
+          res += attrs
+          IO.write(attrs, Attributes(pkg, api))
         }
 
         // Server

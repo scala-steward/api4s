@@ -24,7 +24,7 @@ object Reserved {
 
     "F", "S", "RoutingErrorAlgebra", "Helpers", "RichRequest", "Endpoint", "Decode", "Errors",
 
-    "Model", "Http4sServer", "Http4sClient", "Client", "Api", "Media"
+    "Model", "Http4sServer", "Http4sClient", "Client", "Api", "Media", "Attributes"
   ) ++ Registry.registry.map { case (_, (n, _)) => n }
 
   def letterDigitOrUnderscore(c: Char): Boolean = c.isLetterOrDigit || c == '_'

@@ -40,22 +40,25 @@ object Http4sServer {
     }
 
     def responseMapperStr(c: String, t: Option[(MediaType, Type)]): String = t match {
-      case None => s"Helpers.emptyResponse[F](Status.$c)"
+      case None => s"Helpers.emptyResponse[F](Status.$c, Attributes.${e.name.get})"
       case Some((mt, t)) if MediaType.application.json.satisfiedBy(mt) =>
-        s"Helpers.jsonResponse[F, ${typeStr(t)}](Status.$c)"
+        s"Helpers.jsonResponse[F, ${typeStr(t)}](Status.$c, Attributes.${e.name.get})"
       case Some((mt, _)) if MediaRange.`text/*`.satisfiedBy(mt) =>
         val sw = new StringWriter()
         MediaType.http4sHttpCodecForMediaType.render(sw, mt)
-        s"""Helpers.textResponse[F](Status.$c, "${sw.result}")"""
+        s"""Helpers.textResponse[F](Status.$c, "${sw.result}", Attributes.${e.name.get})"""
       case Some(_) =>
-        s"Helpers.mediaResponse[F](Status.$c)"
+        s"Helpers.mediaResponse[F](Status.$c, Attributes.${e.name.get})"
     }
 
     def apiMapper(on: String) = e.produces match {
       case Produces.Untyped =>
         List(
           s"F.map($on.allocated) {",
-          "  case (x, r) => x.withBodyStream(x.body.onFinalize(r))",
+          "  case (x, r) => x.copy(",
+          "    body = x.body.onFinalize(r),",
+          s"    attributes = Attributes.${e.name.get}",
+          "  )",
           "}"
         )
       case Produces.One(c, t @ None) =>

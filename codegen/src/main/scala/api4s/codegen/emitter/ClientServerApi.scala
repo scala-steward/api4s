@@ -45,8 +45,8 @@ object ClientServerApi {
         case ps => s"(${ps.mkString(", ")})"
       }
       " = " + (e.produces match {
-        case Produces.Untyped => s"this.api.${e.name.get}$params.mapK(this.f)"
-        case _ => s"this.f(this.api.${e.name.get}$params)"
+        case Produces.Untyped => s"api.${e.name.get}$params.mapK(this.f)"
+        case _ => s"this.f(api.${e.name.get}$params)"
       })
     }
 

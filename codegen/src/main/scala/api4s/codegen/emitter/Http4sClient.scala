@@ -177,6 +177,7 @@ object Http4sClient {
       entity.map("  " + _),
       List(
         List("val _request = Request[F]("),
+        List(s"  attributes = Attributes.${e.name.get},"),
         List(s"  method = Method.${method.toString.toUpperCase},"),
         List(s"  uri = http4s.Uri("),
         if (queryRequired) List("    query = http4s.Query.fromVector(_query),") else Nil,
