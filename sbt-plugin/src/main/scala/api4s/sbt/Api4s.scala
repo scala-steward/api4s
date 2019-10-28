@@ -11,7 +11,7 @@ import scala.util.control.NonFatal
 
 object Api4s extends AutoPlugin {
   case class Src(
-    file: File,
+    files: Seq[File],
     pkg: String,
     server: Boolean = true,
     client: Boolean = true,
@@ -50,15 +50,20 @@ object Api4s extends AutoPlugin {
       def parsePkg(s: String): File =
         s.split('.').foldLeft((sourceManaged in Compile).value) { case (pkg, frg) => pkg / frg }
 
-      api4sSources.value flatMap { case Src(file, pkg, server, client, f) =>
-        val src = scala.io.Source.fromFile(file)
+      api4sSources.value flatMap { case Src(files, pkg, server, client, f) =>
+        val srcs = files map scala.io.Source.fromFile
         val api = try {
-          f(Stages(swagger.Root(src.mkString).api))
+          import api4s.codegen.ast.Merge._
+          import scala.collection.immutable.ListMap
+
+          f(Stages(srcs.foldLeft(Api(ListMap.empty, ListMap.empty)) {
+            case (acc, src) => acc ++ swagger.Root(src.mkString).api
+          }))
         } catch {
           case NonFatal(e) =>
-            throw new Exception(s"Failed to compile $file", e)
+            throw new Exception(s"Failed to compile $files", e)
         } finally {
-          src.close()
+          srcs.foreach(_.close)
         }
         val p = parsePkg(pkg)
         val res = mutable.Buffer[File]()
